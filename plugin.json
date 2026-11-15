@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "id": "tokenflux.ticket",
+  "version": "0.1.0",
+  "apiVersion": 1,
+  "minHostVersion": "0.7.3",
+  "name": {
+    "en": "Support Tickets",
+    "zh": "支持工单"
+  },
+  "description": {
+    "en": "Private support tickets with persistent storage and Telegram notifications.",
+    "zh": "独立数据库工单、管理回复与 Telegram 消息通知。"
+  },
+  "publisher": {
+    "name": "Support Tickets"
+  },
+  "license": "MIT",
+  "icon": "icon.svg",
+  "permissions": [],
+  "backend": {
+    "executable": "bin/plugin",
+    "routes": [
+      {
+        "method": "*",
+        "path": "/admin/*",
+        "auth": "admin",
+        "maxBodyBytes": 32768
+      },
+      {
+        "method": "*",
+        "path": "/tickets",
+        "auth": "user",
+        "maxBodyBytes": 32768
+      },
+      {
+        "method": "*",
+        "path": "/tickets/*",
+        "auth": "user",
+        "maxBodyBytes": 32768
+      }
+    ],
+    "tasks": [
+      {
+        "name": "deliver-notifications",
+        "schedule": "@every 1m",
+        "timeoutSeconds": 60
+      }
+    ]
+  },
+  "frontend": {
+    "entry": "frontend/index.js",
+    "styles": [
+      "frontend/index.css"
+    ],
+    "pages": [
+      {
+        "id": "user",
+        "path": "",
+        "audience": "user",
+        "title": {
+          "en": "Support Tickets",
+          "zh": "支持工单"
+        }
+      },
+      {
+        "id": "admin",
+        "path": "",
+        "audience": "admin",
+        "title": {
+          "en": "Support Tickets",
+          "zh": "支持工单"
+        }
+      }
+    ],
+    "menus": [
+      {
+        "page": "user",
+        "label": {
+          "en": "Support Tickets",
+          "zh": "支持工单"
+        },
+        "icon": "frontend/menu.svg",
+        "order": 110
+      },
+      {
+        "page": "admin",
+        "label": {
+          "en": "Support Tickets",
+          "zh": "支持工单"
+        },
+        "icon": "frontend/menu.svg",
+        "order": 110
+      }
+    ]
+  },
+  "config": {
+    "fields": [
+      {
+        "key": "telegram_enabled",
+        "type": "boolean",
+        "label": {
+          "en": "Enable Telegram",
+          "zh": "启用 Telegram 工单通知"
+        },
+        "default": false
+      },
+      {
+        "key": "bot_token",
+        "type": "secret",
+        "label": {
+          "en": "Telegram bot token",
+          "zh": "Telegram Bot Token"
+        }
+      },
+      {
+        "key": "chat_id",
+        "type": "string",
+        "label": {
+          "en": "Telegram chat ID",
+          "zh": "接收通知的数字 Chat ID"
+        },
+        "maxLength": 21
+      },
+      {
+        "key": "site_url",
+        "type": "string",
+        "label": {
+          "en": "Public HTTPS origin",
+          "zh": "网站 HTTPS 地址（不含路径）"
+        },
+        "maxLength": 250
+      }
+    ]
+  }
+}
