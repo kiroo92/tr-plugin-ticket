@@ -21,4 +21,7 @@ jobs:
         with:
           version: 12.9.1
       - run: go test -race ./...
-      - run: make pack
+      - name: Build and validate packages
+        run: |
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then unset GITHUB_REF_NAME; fi
+          make pack

@@ -9,3 +9,4 @@
 - 实施进度与验证入口见 TODO.md；重型检查串行，GOMAXPROCS=2、GOFLAGS=-p=1、GOMEMLIMIT=1GiB。
 - Windows 使用 `./build.ps1`；POSIX 使用 `make pack`。前端保持 Web SDK 0.2.0，Go CLI 使用模块 tool 依赖 `go tool trplugin`。打包图标源位于 `assets/menu.svg`（SDK 自动复制至 manifest 的 frontend/menu.svg）；Windows TMP/TEMP 须与输出在同一盘。
 - SDK 定时任务最短为 1 分钟，通知任务每轮最多 5 条。修改状态必须联动待回复标记、消息、幂等记录和同事务通知；测试使用 plugintest 独立目录，先 Shutdown 再让 harness 清理。
+- SDK pack 会将非空 GITHUB_REF_NAME 当作发行标签校验；分支/PR/手动 CI 打包前仅在 ref_type 不是 tag 时 unset，标签构建保留版本匹配检查。
