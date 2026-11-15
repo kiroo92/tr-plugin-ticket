@@ -1,6 +1,7 @@
 # 支持工单插件
 
 - 独立公开源码仓库为 `kiroo92/tr-plugin-ticket`，主分支 `main`；Git 仅跟踪源码与构建配置，dist、release、依赖目录和 SQLite 业务文件不入库。
+- 插件交付同时发布自己的签名来源，固定 URL 为 GitHub Releases latest/download/index.json，公钥见 README 与 index-public-key.txt。使用独立 ticket-index 签名身份，私钥仅保存在用户配置目录；先上传完整草稿、核验索引签名和全部安装包，再公开，不替换已公开的同版本资产。
 - 新建正式插件，对应 ../ticket-prototype/index.html；用户状态只有打开/已解决，管理端待回复为打开工单的额外标记。
 - 使用上游 Go import 路径，通过 replace 固定 kiroo92/TokenRouter-plugin-data SDK v0.3.0；宿主至少 0.7.3，Init 必须校验 DataDir，业务存入 plugin.sqlite，不使用 KV、StateDir 或安装目录。
 - 用户身份仅取 SDK caller；管理员端点也在处理器内验证角色。新建、回复、重开、解决需幂等，通知与业务在同一 SQLite 事务入库。

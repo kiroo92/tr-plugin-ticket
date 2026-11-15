@@ -2,6 +2,17 @@
 
 独立的 TokenRouter 工单插件，插件 ID 为 `tokenflux.ticket`。从现有工单原型实现，提供用户和管理页面，不修改宿主、福利插件或订单通知插件。
 
+## 自建来源安装
+
+在管理员插件管理的来源设置中添加下列来源，启用并刷新后，在发现页安装“支持工单”。分发方式与福利插件一致，索引使用独立 Ed25519 签名身份。
+
+- 名称：支持工单 · kiroo92
+- 来源 URL：`https://github.com/kiroo92/tr-plugin-ticket/releases/latest/download/index.json`
+- Ed25519 公钥：`wTa5qI3iRwrJE70I8459VZrTyYREWuD3k1jmlbBPCyA=`
+- 发布页：https://github.com/kiroo92/tr-plugin-ticket/releases
+
+宿主须能访问 GitHub Releases 及发行资产下载主机。索引和 index.json.sig 必须来自同一次发布，安装包链接固定到版本标签。发布时先完整上传草稿并校验，再公开；不替换已公开的同版本资产。私钥仅保存在本机用户配置目录，不进入 Git 或发布资产。
+
 ## 功能
 
 - 用户：创建本人工单、搜索标题/编号/对话、查看历史、回复、标记解决和重新打开。
