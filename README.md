@@ -77,7 +77,7 @@ Windows PowerShell 7.4+：
 
 Linux/macOS：`make pack`；Makefile 的 `TRPLUGIN ?= go tool trplugin` 使用模块锁定的 SDK。CI 仅验证，运行 Linux 竞态检查与完整打包，不上传或发布插件。
 
-产物：`release/tokenflux.ticket-0.1.0-<platform>.tar.gz`，在目标宿主插件管理中选择对应平台包安装。不要将服务器数据库混入发布包。
+产物：`release/tokenflux.ticket-0.2.0-<platform>.tar.gz`，在目标宿主插件管理中选择对应平台包安装。不要将服务器数据库混入发布包。
 
 ## 开发与验证边界
 
