@@ -28,6 +28,7 @@ type settings struct {
 
 type Plugin struct {
 	db            *sql.DB
+	host          *sdk.Host
 	configuration atomic.Pointer[settings]
 	client        *http.Client
 	telegramURL   string
@@ -109,6 +110,7 @@ func (p *Plugin) Init(ctx context.Context, env *sdk.Env) error {
 		return fmt.Errorf("设置数据库权限: %w", err)
 	}
 	p.configuration.Store(config)
+	p.host = env.Host
 	p.root, p.cancel = context.WithCancel(context.Background())
 	return nil
 }

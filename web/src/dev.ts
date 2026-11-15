@@ -7,9 +7,11 @@ const records = new Map<number, Detail>([[1, { ticket, messages: [
   { id: 1, role: 'user', author: 'Developer', body: '调用模型时偶尔出现 429。请问应该检查哪些配置？', created_at: now - 3600000 },
   { id: 2, role: 'staff', author: '支持团队', body: '请提供发生时间、模型名称及脱敏后的错误提示，方便我们继续排查。', created_at: now - 1800000 },
   { id: 3, role: 'user', author: 'Developer', body: '发生时间约为今天上午 10:30，已确认账户余额充足。', created_at: now },
+], next_before: 0 }], [2, { ticket: { ...ticket, id: 2, username: 'noname@example.com', title: '账户名称未设置时的显示效果', category: '账户与权限', status: 'open', awaiting_admin: true, created_at: now - 600000, updated_at: now - 600000 }, messages: [
+  { id: 4, role: 'user', author: 'noname@example.com', body: '这个账户没有设置显示名称，工单里改为显示邮箱。', created_at: now - 600000 },
 ], next_before: 0 }]])
 const seen = new Map<string, { id: number }>()
-let nextMessage = 4
+let nextMessage = 5
 configureMock(async (method, path, options) => {
   if (path.startsWith('/admin/notifications')) {
     if (method === 'GET') return { enabled: false, configured: false, pending: 0, failed: 0, recent: [] }

@@ -105,11 +105,17 @@ func (p *Plugin) list(w http.ResponseWriter, r *http.Request) {
 		p.databaseError(w)
 		return
 	}
+	if err = rows.Close(); err != nil {
+		p.databaseError(w)
+		return
+	}
 	next := -1
 	if len(result) > 30 {
 		result = result[:30]
 		next = offset + 30
 	}
+	p.fillMissingNames(r.Context(), result, nil)
+	fillPlaceholders(result, nil)
 	counts := map[string]int{"all": total, "open": opened, "resolved": resolved}
 	if admin {
 		counts["pending"] = pending
@@ -141,29 +147,41 @@ func (p *Plugin) detail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	rows, err := p.db.QueryContext(r.Context(), "SELECT id,author,role,body,created_at FROM messages WHERE ticket_id=? AND (?=0 OR id<?) ORDER BY id DESC LIMIT 51", id, before, before)
+	rows, err := p.db.QueryContext(r.Context(), "SELECT id,actor_id,author,role,body,created_at FROM messages WHERE ticket_id=? AND (?=0 OR id<?) ORDER BY id DESC LIMIT 51", id, before, before)
 	if err != nil {
 		p.databaseError(w)
 		return
 	}
 	defer rows.Close()
-	messages := []Message{}
+	stored := []storedMessage{}
 	for rows.Next() {
-		var message Message
-		if err = rows.Scan(&message.ID, &message.Author, &message.Role, &message.Body, &message.CreatedAt); err != nil {
+		var message storedMessage
+		if err = rows.Scan(&message.ID, &message.ActorID, &message.Author, &message.Role, &message.Body, &message.CreatedAt); err != nil {
 			p.databaseError(w)
 			return
 		}
-		messages = append(messages, message)
+		stored = append(stored, message)
 	}
 	if err = rows.Err(); err != nil {
 		p.databaseError(w)
 		return
 	}
+	if err = rows.Close(); err != nil {
+		p.databaseError(w)
+		return
+	}
 	next := int64(0)
-	if len(messages) > 50 {
-		messages = messages[:50]
-		next = messages[49].ID
+	if len(stored) > 50 {
+		stored = stored[:50]
+		next = stored[49].ID
+	}
+	tickets := []Ticket{ticket}
+	p.fillMissingNames(r.Context(), tickets, stored)
+	fillPlaceholders(tickets, stored)
+	ticket = tickets[0]
+	messages := make([]Message, len(stored))
+	for index, message := range stored {
+		messages[index] = message.Message
 	}
 	slices.Reverse(messages)
 	sdk.WriteJSON(w, 200, map[string]any{"ticket": ticket, "messages": messages, "next_before": next})
@@ -235,9 +253,10 @@ func (p *Plugin) change(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	now := time.Now().UnixMilli()
+	author := p.nameFor(r.Context(), caller)
 	body, role, event := input.Body, "user", ""
 	if action == "create" {
-		result, err := tx.ExecContext(r.Context(), "INSERT INTO tickets(user_id,username,title,category,priority,status,awaiting_admin,created_at,updated_at) VALUES(?,?,?,?,?,'open',1,?,?)", caller.UserID, caller.Username, input.Title, input.Category, input.Priority, now, now)
+		result, err := tx.ExecContext(r.Context(), "INSERT INTO tickets(user_id,username,title,category,priority,status,awaiting_admin,created_at,updated_at) VALUES(?,?,?,?,?,'open',1,?,?)", caller.UserID, author, input.Title, input.Category, input.Priority, now, now)
 		if err != nil {
 			p.databaseError(w)
 			return
@@ -299,7 +318,7 @@ func (p *Plugin) change(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if _, err = tx.ExecContext(r.Context(), "INSERT INTO messages(ticket_id,actor_id,author,role,body,created_at) VALUES(?,?,?,?,?,?)", id, caller.UserID, caller.Username, role, body, now); err != nil {
+	if _, err = tx.ExecContext(r.Context(), "INSERT INTO messages(ticket_id,actor_id,author,role,body,created_at) VALUES(?,?,?,?,?,?)", id, caller.UserID, author, role, body, now); err != nil {
 		p.databaseError(w)
 		return
 	}
