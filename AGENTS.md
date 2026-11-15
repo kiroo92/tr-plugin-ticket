@@ -5,6 +5,7 @@
 - 新建正式插件，对应 ../ticket-prototype/index.html；用户状态只有打开/已解决，管理端待回复为打开工单的额外标记。
 - 使用上游 Go import 路径，通过 replace 固定 kiroo92/TokenRouter-plugin-data SDK v0.3.0；宿主至少 0.7.3，Init 必须校验 DataDir，业务存入 plugin.sqlite，不使用 KV、StateDir 或安装目录。
 - 用户身份仅取 SDK caller；管理员端点也在处理器内验证角色。新建、回复、重开、解决需幂等，通知与业务在同一 SQLite 事务入库。
+- 显示名称解析顺序：caller.Username → 宿主邮箱 → 「用户 #ID / 管理员 #ID」。邮箱走 `user.lookup` + `user.email`（见 profile.go），查询失败或权限缺失时静默降级，不阻断工单请求；读接口对历史空 username/author 回填并写回数据库。新增权限需在 manifest 声明并在 README 提示安装时确认。
 - 不提供附件上传。Telegram 使用宿主 secret 配置，消息不包含正文；失败持久重试，投递可能重复，不承诺仅一次。
 - 新建工单表单样式以 `.ticket-create` 独立覆盖输入框、选择框和文本域；宿主弹窗内容可能移出 `.ticket-app`，不要依赖该祖先。验证需包含移出容器后的表单和手机端布局。
 - v0.2.0 起界面采用紧凑布局（对应 `../ticket-prototype/redesign.html`）：顶部仅标题栏加筛选/搜索两行，不再有面包屑、大标题或统计卡；筛选计数在 tab 内。桌面工作区固定两栏、`clamp()` 高度撑满视口，列表与对话各自滚动。消息为左右气泡，事件为居中分隔线。输入框一律 `resize:none`，回复框按 `scrollHeight` 在 40–132px 内自动增高，弹窗文本域 116–260px。移动端 ≤820px 单列，选中工单后 `show-chat` 只显示对话并在下一帧 `scrollIntoView`。`.tk-*` 前缀避免与宿主及福利插件冲突。
